@@ -1,0 +1,125 @@
+<%! func RegistryTmpl(w io.Writer, r *registry) error %>
+
+<%%  %%>
+
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Title of the document</title>
+<script>var runOnLoad=function(c,o,d,e){function x(){for(e=1;c.length;)c.shift()()}o[d]?(document[d]('DOMContentLoaded',x,0),o[d]('load',x,0)):o.attachEvent('onload',x);return function(t){e?o.setTimeout(t,0):c.push(t)}}([],window,'addEventListener');</script>
+<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Patua+One%7COpen+Sans:400,400italic" type="text/css">
+<script type="text/javascript" src="CollapsibleLists.compressed.js"></script>
+ <script type="text/javascript">
+
+      runOnLoad(function(){ CollapsibleLists.apply(); });
+
+    </script>
+<style type="text/css">
+html{
+  height : 100%;
+}
+
+body{
+  position    : relative;
+  min-height  : 100%;
+  margin      : 0;
+  padding     : 0;
+  font-family : 'Open Sans',sans-serif;
+  line-height : 1.5;
+}
+
+.pre {
+  white-space: pre-wrap;
+  -moz-user-select:text;
+}
+
+ul {
+  padding-left: 1.5em;
+}
+
+     .treeView{
+        -moz-user-select:none;
+        position:relative;
+      }
+
+      .treeView ul{
+        margin:0 0 0 -1.5em;
+        padding:0 0 0 1.5em;
+      }
+
+      .treeView ul ul{
+        background:url('list-item-contents.png') repeat-y left;
+      }
+
+      .treeView li.lastChild > ul{
+        background-image:none;
+      }
+
+      .treeView li{
+        margin:0;
+        padding:0;
+        background:url('list-item-root.png') no-repeat top left;
+        list-style-position:inside;
+        list-style-image:url('button.png');
+        cursor:auto;
+      }
+
+      .treeView li.collapsibleListOpen{
+        list-style-image:url('button-open.png');
+        cursor:pointer;
+      }
+
+      .treeView li.collapsibleListClosed{
+        list-style-image:url('button-closed.png');
+        cursor:pointer;
+      }
+
+      .treeView li li{
+        background-image:url('list-item.png');
+        padding-left:1.5em;
+      }
+
+      .treeView li.lastChild{
+        background-image:url('list-item-last.png');
+      }
+
+      .treeView li.collapsibleListOpen{
+        background-image:url('list-item-open.png');
+      }
+
+      .treeView li.collapsibleListOpen.lastChild{
+        background-image:url('list-item-last-open.png');
+      }
+    </style>
+</head>
+
+<body>
+
+<% stack := []RegistryItem{r} %>
+<ul class="treeView">
+  <% for len(stack) > 0 { %>
+    <% item := stack[0]; stack = stack[1:] %>
+    <% if item == nil { %>
+      </ul></li>
+      <% continue %>
+    <% } %>
+
+       <% if len(stack) == 0 || stack[0] != nil { %>
+         <li>
+       <% } else { %>
+         <li class="lastChild">
+       <% } %>
+     <span class="pre"><%= item %></span>
+    <% if len(item.Children()) > 0 { %>
+     <% stack = append([]RegistryItem{nil}, stack...); stack = append(item.Children(), stack...) %>
+     <ul class="collapsibleList">
+     <% } else { %>
+       </li>
+    <% } %>
+  <% } %>
+</ul>     
+</body>
+
+</html> 

@@ -1,0 +1,14 @@
+{
+	"ImportPath": "github.com/appuio/registry-viewer",
+	"GoVersion": "go1.4",
+	"GodepVersion": "v62",
+	"Packages": [
+		"./..."
+	],
+	"Deps": [
+		{
+			"ImportPath": "github.com/pivotal-golang/bytefmt",
+			"Rev": "263ce04fc1d71bc7d50c241293488b3f54c779e5"
+		}
+	]
+}
