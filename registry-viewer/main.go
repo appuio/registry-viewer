@@ -51,8 +51,9 @@ import (
 
 */
 
+var registry *Registry
 
-func handler(w http.ResponseWriter, r *http.Request) {
+func main() {
 //  referencedManifests := make(map[string]struct{})
 //  layers := make(map[string][]ImageStreamMetadata)
   registry := NewRegistry()
@@ -196,11 +197,12 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 //  registry.Deduplicate()
   registry.Sort()
-  RegistryTmpl(w, registry)
-}
 
-func main() {
   http.HandleFunc("/", handler)
   http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("/srv"))))
   http.ListenAndServe(":8080", nil)
+}
+
+func handler(w http.ResponseWriter, r *http.Request) {
+  RegistryTmpl(w, registry)
 }

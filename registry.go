@@ -127,17 +127,17 @@ func (item *registryItem) Child(name string) RegistryItem {
   return &project{Bytes: bytes, Size: bytefmt.ByteSize(bytes), Images: make(map[string]image)}
 }*/
 
-type registry struct {
+type Registry struct {
 	registryItem
 	//  Projects []*project
 }
 
-func (r *registry) String() string {
+func (r *Registry) String() string {
 	return fmt.Sprintf("projects: %d  size: %s", len(r.children), bytefmt.ByteSize(r.Bytes()))
 }
 
-func NewRegistry() *registry {
-	return &registry{registryItem: registryItem{orderBy: bySizeDesc}}
+func NewRegistry() *Registry {
+	return &Registry{registryItem: registryItem{orderBy: bySizeDesc}}
 }
 
 type layer struct {
@@ -215,7 +215,7 @@ func (item *project) String() string {
 
   } */
 
-func (reg *registry) AddManifest(projectName string, imageName string, tagName string, revName string, revCreated string, manifest *Manifest) {
+func (reg *Registry) AddManifest(projectName string, imageName string, tagName string, revName string, revCreated string, manifest *Manifest) {
 	/*  if (layers == nil) {
 	    layers = make(map[string]*layer)
 	  }*/
@@ -316,7 +316,7 @@ func (reg *registry) AddManifest(projectName string, imageName string, tagName s
 	  l.Size = bytefmt.ByteSize(l.Bytes) */
 }
 
-func (reg *registry) Deduplicate() {
+func (reg *Registry) Deduplicate() {
 	for _, proj := range reg.children {
 		proj.(*project).deduplicate()
 	}

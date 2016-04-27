@@ -1,4 +1,4 @@
-<%! func RegistryTmpl(w io.Writer, r *registry) error %>
+<%! func RegistryTmpl(w io.Writer, r *Registry) error %>
 
 <%%  %%>
 
