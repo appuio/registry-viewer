@@ -56,7 +56,7 @@ var registry *Registry
 func main() {
 //  referencedManifests := make(map[string]struct{})
 //  layers := make(map[string][]ImageStreamMetadata)
-  registry := NewRegistry()
+  registry = NewRegistry()
 
   registryUrl := os.Getenv("REGISTRY_URL")
   username := os.Getenv("OPENSHIFT_USER")
