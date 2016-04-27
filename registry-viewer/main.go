@@ -205,4 +205,7 @@ func main() {
 
 func handler(w http.ResponseWriter, r *http.Request) {
   RegistryTmpl(w, registry)
+  if f, ok := w.(http.Flusher); ok {
+      f.Flush()
+    }
 }
