@@ -16,4 +16,4 @@ USER 1001
 EXPOSE 8080
 
 WORKDIR /srv
-CMD ["${HOME}/gocode/bin/registry-viewer"]
+CMD "${HOME}/gocode/bin/registry-viewer"
