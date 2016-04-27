@@ -1,5 +1,5 @@
 {
-	"ImportPath": "github.com/appuio/registry-viewer",
+	"ImportPath": "github.com/appuio/registry",
 	"GoVersion": "go1.4",
 	"GodepVersion": "v62",
 	"Packages": [
