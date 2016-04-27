@@ -1,6 +1,6 @@
-package main
+package registry
 
-import "github.com/appuio/registry-viewer/Godeps/_workspace/src/github.com/pivotal-golang/bytefmt"
+import "github.com/appuio/registry/Godeps/_workspace/src/github.com/pivotal-golang/bytefmt"
 import "fmt"
 import "sort"
 
@@ -215,7 +215,7 @@ func (item *project) String() string {
 
   } */
 
-func (reg *registry) addManifest(projectName string, imageName string, tagName string, revName string, revCreated string, manifest *Manifest) {
+func (reg *registry) AddManifest(projectName string, imageName string, tagName string, revName string, revCreated string, manifest *Manifest) {
 	/*  if (layers == nil) {
 	    layers = make(map[string]*layer)
 	  }*/

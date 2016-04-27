@@ -1,6 +1,4 @@
-package main
-
-//import "fmt"
+package registry
 
 type ImageStreamList struct {
   Items []*ImageStream
@@ -31,15 +29,15 @@ type ImageStreamTagRevision struct {
   Manifest *Manifest
 }
 
-func (isl *ImageStreamList) loadManifests(registry, username, password string) {
+func (isl *ImageStreamList) LoadManifests(registry, username, password string) {
   for _, is := range isl.Items {
-    is.loadManifests(registry, username, password)
+    is.LoadManifests(registry, username, password)
 //    fmt.Println(is)
 //    break
   }
 }
 
-func (is *ImageStream) loadManifests(registry, username, password string) {
+func (is *ImageStream) LoadManifests(registry, username, password string) {
   for _, tag := range is.Status.Tags {
     for _, rev := range tag.Items {
       rev.Manifest = new(Manifest)

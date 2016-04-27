@@ -4,6 +4,7 @@ import (
   "os"
   "net/http"
   "encoding/json"
+  . "github.com/appuio/registry"
 )
 
 
@@ -61,27 +62,27 @@ func handler(w http.ResponseWriter, r *http.Request) {
   password := os.Getenv("OPENSHIFT_PASSWORD")
 
   if username != "" && password != "" {
-    sh("oc login --username='%s' --password='%s'", username, password).CheckErrors()
+    Sh("oc login --username='%s' --password='%s'", username, password).CheckErrors()
   }
 
-  token := sh("oc whoami -t").Stdout()
+  token := Sh("oc whoami -t").Stdout()
 
 
 //  client := RegistryClient{Registry: *registryPtr, Username: *usernamePtr, Password: token}
 
   
   var imageStreams ImageStreamList
-  json.Unmarshal(sh("oc get is -o json --all-namespaces").StdoutBytes(), &imageStreams)
+  json.Unmarshal(Sh("oc get is -o json --all-namespaces").StdoutBytes(), &imageStreams)
 //  imageStreams := imageStreamList["items"]
 //  fmt.Println(imageStreams.Kind)
 //  fmt.Println(len(imageStreams.Items))
 
-  imageStreams.loadManifests(registryUrl, username, token)
+  imageStreams.LoadManifests(registryUrl, username, token)
 
   for _, is := range imageStreams.Items {
     for _, tag := range is.Status.Tags {
       for _, rev := range tag.Items {
-         registry.addManifest(is.Metadata.Namespace, is.Metadata.Name, tag.Tag, rev.Image, rev.Created, rev.Manifest)
+         registry.AddManifest(is.Metadata.Namespace, is.Metadata.Name, tag.Tag, rev.Image, rev.Created, rev.Manifest)
       }
     }  
   }

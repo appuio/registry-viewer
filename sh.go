@@ -1,4 +1,4 @@
-package main
+package registry
 
 import "fmt"
 // simport "bufio"
@@ -7,40 +7,40 @@ import "os/exec"
 import "bytes"
 //import "net/http"
 
-type proc struct {
+type Proc struct {
   stdout string
   stderr string
   err error
   checkedErrors bool
 }
 
-func (proc *proc) CheckErrors() {
+func (proc *Proc) CheckErrors() {
   if proc.checkedErrors && proc.err != nil {
     panic(proc.err.Error() + "\n" + proc.stderr)
   }
 }
 
-func (proc *proc) Stdout() string {
+func (proc *Proc) Stdout() string {
   proc.CheckErrors()
   return proc.stdout
 }
 
-func (proc *proc) StdoutBytes() []byte {
+func (proc *Proc) StdoutBytes() []byte {
   proc.CheckErrors()
   return []byte(proc.stdout)
 }
 
-func (proc *proc) StdoutLines() []string {
+func (proc *Proc) StdoutLines() []string {
   proc.CheckErrors()
   return strings.Split(proc.stdout, "\n")
 }
 
-func (proc *proc) Err() error {
+func (proc *Proc) Err() error {
   proc.checkedErrors = true
   return proc.err
 }
 
-func sh(cmd string, a ...interface{}) *proc {
+func Sh(cmd string, a ...interface{}) *Proc {
 //  var proc proc
   var command *exec.Cmd
   if len(a) == 0 {
@@ -52,7 +52,7 @@ func sh(cmd string, a ...interface{}) *proc {
   command.Stderr = &stderr
   out, err := command.Output()
   
-  return &proc { 
+  return &Proc { 
     stdout: strings.TrimSuffix(string(out), "\n"),
     stderr: strings.TrimSuffix(stderr.String(), "\n"),
     err: err,

@@ -1,12 +1,22 @@
 package main
 
-import (
-  "flag"
-  "net/http"
-  "strings"
-  "encoding/json"
-)
+import "flag"
+// simport "bufio"
+//import "strings"
+//import "strconv"
+import "os"
+import "fmt"
+import "encoding/json"
+import "strings"
+import "sort"
+import "regexp"
 
+import . "github.com/appuio/registry"
+//import "net/http"
+//import "io/ioutil"
+
+//import "k8s.io/kubernetes/pkg/util/jsonpath"
+//import "net/http"
 
 /*
 
@@ -51,8 +61,7 @@ import (
 
 */
 
-
-func handler(w http.ResponseWriter, r *http.Request) {
+func main() {
 //  referencedManifests := make(map[string]struct{})
   layers := make(map[string][]ImageStreamMetadata)
   registry := NewRegistry()
@@ -63,30 +72,22 @@ func handler(w http.ResponseWriter, r *http.Request) {
   flag.Parse()
 
   if *usernamePtr != "" && *passwordPtr != "" {
-    sh("oc login --username='%s' --password='%s'", *usernamePtr, *passwordPtr).CheckErrors()
+    Sh("oc login --username='%s' --password='%s'", *usernamePtr, *passwordPtr).CheckErrors()
   }
 
-  token := sh("oc whoami -t").Stdout()
+  token := Sh("oc whoami -t").Stdout()
 
-
-//  client := RegistryClient{Registry: *registryPtr, Username: *usernamePtr, Password: token}
+// {range .fsLayers[*]}{.blobSum}{"\n"}{end}
 
   
   var imageStreams ImageStreamList
-  json.Unmarshal(sh("oc get is -o json --all-namespaces").StdoutBytes(), &imageStreams)
+  json.Unmarshal(Sh("oc get is -o json --all-namespaces").StdoutBytes(), &imageStreams)
 //  imageStreams := imageStreamList["items"]
 //  fmt.Println(imageStreams.Kind)
 //  fmt.Println(len(imageStreams.Items))
 
-  imageStreams.loadManifests(*registryPtr, *usernamePtr, token)
+  imageStreams.LoadManifests(*registryPtr, *usernamePtr, token)
 
-  for _, is := range imageStreams.Items {
-    for _, tag := range is.Status.Tags {
-      for _, rev := range tag.Items {
-         registry.addManifest(is.Metadata.Namespace, is.Metadata.Name, tag.Tag, rev.Image, rev.Created, rev.Manifest)
-      }
-    }  
-  }
 
 //  b, _ := json.Marshal(imageStreams)
 //  fmt.Println(string(b))
@@ -94,11 +95,10 @@ func handler(w http.ResponseWriter, r *http.Request) {
 //  fmt.Println(imageStreams)
 //  imageStreams.Items[0].Metadata.Namespace, imageStreams.Items[0].Metadata.Name, imageStreams.Items[0].Status.Tags[0].Items[0].Image
 
-//  allLayers := sh("oc exec -n default `oc get pod -n default -l deploymentconfig=docker-registry -o jsonpath='{..metadata.name}'` -- find /registry -path \"/registry/docker/registry/v2/repositories/*/*/_layers/sha256/*\" -type f -printf '%h\n' | sed -e 's,.*/\\([^/]\\+\\),\\1,'").StdoutLines()
-//  allLayerStrings := sh("oc exec -n default `oc get pod -n default -l deploymentconfig=docker-registry -o jsonpath='{..metadata.name}'` -- find /registry -path \"/registry/docker/registry/v2/repositories/*/*/_layers/sha256/*\" -type f -printf '%h\n'").StdoutLines()
-//  allLayers := make([]string, len(allLayerStrings))
-
-/*  re := regexp.MustCompile("/registry/docker/registry/v2/repositories/([^/]+)/([^/]+)/_layers/sha256/([0-9a-z]+)")
+//  allLayers := Sh("oc exec -n default `oc get pod -n default -l deploymentconfig=docker-registry -o jsonpath='{..metadata.name}'` -- find /registry -path \"/registry/docker/registry/v2/repositories/*/*/_layers/sha256/*\" -type f -printf '%h\n' | sed -e 's,.*/\\([^/]\\+\\),\\1,'").StdoutLines()
+  allLayerStrings := Sh("oc exec -n default `oc get pod -n default -l deploymentconfig=docker-registry -o jsonpath='{..metadata.name}'` -- find /registry -path \"/registry/docker/registry/v2/repositories/*/*/_layers/sha256/*\" -type f -printf '%h\n'").StdoutLines()
+  allLayers := make([]string, len(allLayerStrings))
+  re := regexp.MustCompile("/registry/docker/registry/v2/repositories/([^/]+)/([^/]+)/_layers/sha256/([0-9a-z]+)")
   for i, layer := range allLayerStrings {
 //    fmt.Println(layer)
     matches := re.FindStringSubmatch(layer)
@@ -119,37 +119,42 @@ func handler(w http.ResponseWriter, r *http.Request) {
         }
       }
     }
-  }*/
+  }
 
 
 
-/*       for _, layer := range allLayers {
+  client := RegistryClient{Registry: *registryPtr, Username: *usernamePtr, Password: token}
+
+       for _, layer := range allLayers {
          if _, ok := layers[layer]; ok {
            for _, metadata := range layers[layer] {
              fmt.Printf("/exports/vdb8/docker/registry/v2/repositories/%s/%s/_layers/sha256/%s\n", metadata.Namespace, metadata.Name, layer)
-  //           client.DeleteLayer(metadata.Namespace, metadata.Name, layer)
+             client.DeleteLayer(metadata.Namespace, metadata.Name, layer)
            }
-//           client.DeleteBlob(layer)
+           client.DeleteBlob(layer)
          }
 
 
 //         delete(layers,strings.Replace(layer.BlobSum, "sha256:", "", 1))
-       }*/
+       }
 
 
-  
+  fmt.Println(len(allLayers))
+   fmt.Println(len(layers))  
 
-  repos := sh("oc get is -o json --all-namespaces |jq -r '.items[].status.dockerImageRepository'|sed -e 's,^.*:5000/,,'").StdoutLines()
+  os.Exit(0)
+
+  repos := Sh("oc get is -o json --all-namespaces |jq -r '.items[].status.dockerImageRepository'|sed -e 's,^.*:5000/,,'").StdoutLines()
 //  fmt.Println(err)
 
    for _, repo := range repos {
-     proc := sh("docker-ls tags --basic-auth --registry %s --user %s --password %s --json %s | jq -r '.Tags[]'", *registryPtr, *usernamePtr, token, repo)
+     proc := Sh("docker-ls tags --basic-auth --registry %s --user %s --password %s --json %s | jq -r '.Tags[]'", *registryPtr, *usernamePtr, token, repo)
      if proc.Err() != nil {
    //    fmt.Println(err.Error() + "\n" + stderr)
        continue
      }    
      for _, tag := range proc.StdoutLines() {
-       manifestJson := sh("docker-ls tag --basic-auth --registry %s --user %s --password %s --json --raw-manifest %s:%s", *registryPtr, *usernamePtr, token, repo, tag).Stdout()
+       manifestJson := Sh("docker-ls tag --basic-auth --registry %s --user %s --password %s --json --raw-manifest %s:%s", *registryPtr, *usernamePtr, token, repo, tag).Stdout()
        manifest := Manifest{}
        json.Unmarshal([]byte(manifestJson), &manifest)
        for _, entry := range manifest.History {         
@@ -163,7 +168,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 //      registry.addTag(project, image, tag, id, Size, id, cmd)
 
-/*       for _, line := range sh("docker-ls tag --basic-auth --registry http://172.30.15.22:5000 --user %s --password %s --json --raw-manifest %s:%s 2>/dev/null | jq -r .history[].v1Compatibility | jq -r -s '.[] | \"\\(.id)\t\\(.Size)\t\\(.container_config.Cmd)\t\\(.config.Cmd)\"'", *usernamePtr, token, repo, tag).StdoutLines() {
+/*       for _, line := range Sh("docker-ls tag --basic-auth --registry http://172.30.15.22:5000 --user %s --password %s --json --raw-manifest %s:%s 2>/dev/null | jq -r .history[].v1Compatibility | jq -r -s '.[] | \"\\(.id)\t\\(.Size)\t\\(.container_config.Cmd)\t\\(.config.Cmd)\"'", *usernamePtr, token, repo, tag).StdoutLines() {
          if line == "" {
            continue
          }
@@ -195,12 +200,15 @@ func handler(w http.ResponseWriter, r *http.Request) {
   }*/
   }
 
-//  registry.Deduplicate()
-  registry.Sort()
-  RegistryTmpl(w, registry)
-}
+  fmt.Println(len(allLayers))
+  fmt.Println(len(layers))
+//  fmt.Println(len(referencedLayers))
 
-func main() {
-  http.HandleFunc("/", handler)
-  http.ListenAndServe(":8080", nil)
+//  registry.addTag("shopbgdi", "shop-bgdi", "jenkins-shop-bgdi-develop-OSE3-37-768c27a", "1234", 1, "1234")
+//  registry.addTag("shopbgdi", "shop-bgdi", "jenkins-shop-bgdi-develop-OSE3-38-5579d80", "6789", 3, "6789")
+
+  registry.Deduplicate()
+  registry.Sort()
+  
+//  RegistryTmpl(os.Stdout, registry)
 }
