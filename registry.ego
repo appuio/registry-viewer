@@ -10,7 +10,7 @@
 <title>Title of the document</title>
 <script>var runOnLoad=function(c,o,d,e){function x(){for(e=1;c.length;)c.shift()()}o[d]?(document[d]('DOMContentLoaded',x,0),o[d]('load',x,0)):o.attachEvent('onload',x);return function(t){e?o.setTimeout(t,0):c.push(t)}}([],window,'addEventListener');</script>
 <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Patua+One%7COpen+Sans:400,400italic" type="text/css">
-<script type="text/javascript" src="CollapsibleLists.compressed.js"></script>
+<script type="text/javascript" src="static/CollapsibleLists.compressed.js"></script>
  <script type="text/javascript">
 
       runOnLoad(function(){ CollapsibleLists.apply(); });
@@ -50,7 +50,7 @@ ul {
       }
 
       .treeView ul ul{
-        background:url('list-item-contents.png') repeat-y left;
+        background:url('static/list-item-contents.png') repeat-y left;
       }
 
       .treeView li.lastChild > ul{
@@ -60,37 +60,37 @@ ul {
       .treeView li{
         margin:0;
         padding:0;
-        background:url('list-item-root.png') no-repeat top left;
+        background:url('static/list-item-root.png') no-repeat top left;
         list-style-position:inside;
-        list-style-image:url('button.png');
+        list-style-image:url('static/button.png');
         cursor:auto;
       }
 
       .treeView li.collapsibleListOpen{
-        list-style-image:url('button-open.png');
+        list-style-image:url('static/button-open.png');
         cursor:pointer;
       }
 
       .treeView li.collapsibleListClosed{
-        list-style-image:url('button-closed.png');
+        list-style-image:url('static/button-closed.png');
         cursor:pointer;
       }
 
       .treeView li li{
-        background-image:url('list-item.png');
+        background-image:url('static/list-item.png');
         padding-left:1.5em;
       }
 
       .treeView li.lastChild{
-        background-image:url('list-item-last.png');
+        background-image:url('static/list-item-last.png');
       }
 
       .treeView li.collapsibleListOpen{
-        background-image:url('list-item-open.png');
+        background-image:url('static/list-item-open.png');
       }
 
       .treeView li.collapsibleListOpen.lastChild{
-        background-image:url('list-item-last-open.png');
+        background-image:url('static/list-item-last-open.png');
       }
     </style>
 </head>
