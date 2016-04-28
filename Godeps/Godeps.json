@@ -7,8 +7,25 @@
 	],
 	"Deps": [
 		{
+			"ImportPath": "github.com/abbot/go-http-auth",
+			"Comment": "v0.3-10-gca62df3",
+			"Rev": "ca62df34b58d26b6a064246c21c0a18f97813173"
+		},
+		{
 			"ImportPath": "github.com/pivotal-golang/bytefmt",
 			"Rev": "263ce04fc1d71bc7d50c241293488b3f54c779e5"
+		},
+		{
+			"ImportPath": "golang.org/x/crypto/bcrypt",
+			"Rev": "285fb2ed20d1dc450fc743a1b3ff7c36bef372b9"
+		},
+		{
+			"ImportPath": "golang.org/x/crypto/blowfish",
+			"Rev": "285fb2ed20d1dc450fc743a1b3ff7c36bef372b9"
+		},
+		{
+			"ImportPath": "golang.org/x/net/context",
+			"Rev": "1aafd77e1e7f6849ad16a7bdeb65e3589a10b2bb"
 		}
 	]
 }
