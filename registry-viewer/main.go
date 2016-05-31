@@ -192,6 +192,7 @@ func main() {
 	//  }
 
 	//  registry.Deduplicate()
+  registry.RemoveEmpty()
 	registry.Sort()
 
 	authenticator := auth.NewBasicAuthenticator("Registry Viewer", Secret)

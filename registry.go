@@ -3,6 +3,7 @@ package registry
 import "github.com/appuio/registry/Godeps/_workspace/src/github.com/pivotal-golang/bytefmt"
 import "fmt"
 import "sort"
+import "strings"
 
 //import "strings"
 
@@ -36,10 +37,12 @@ type RegistryItem interface {
 	//  Size() string
 	AddChild(newChild RegistryItem) RegistryItem
 	RemoveChild(i int)
+	RemoveEmpty()
 	Bytes() uint64
+	Layers() int
 	Sort()
 	Children() []RegistryItem
-	CollectLayers(layers *map[string]*layer)
+	CollectLayers(layers *map[string]*layer, path []string)
 	//  Child(name string) RegistryItem
 	String() string
 }
@@ -62,7 +65,7 @@ func (item *registryItem) Name() string {
 func (item *registryItem) Bytes() uint64 {
 	var result uint64
 	layers := make(map[string]*layer)
-	item.CollectLayers(&layers)
+	item.CollectLayers(&layers, []string{})
 	for _, layer := range layers {
 		result += layer.Bytes()
 	}
@@ -72,9 +75,28 @@ func (item *registryItem) Bytes() uint64 {
 	return result
 }
 
-func (item *registryItem) CollectLayers(layers *map[string]*layer) {
+func (item *registryItem) Layers() int {
+	layers := make(map[string]*layer)
+	item.CollectLayers(&layers, []string{})
+  return len(layers)
+}
+
+func (item *registryItem) CollectLayers(layers *map[string]*layer, path []string) {
 	for _, child := range item.children {
-		child.CollectLayers(layers)
+		child.CollectLayers(layers, append(path, item.Name()))
+	}
+}
+
+func (item *registryItem) RemoveEmpty() {
+  i := 0
+	for range item.children {    
+    if item.children[i].Layers() == 0 {
+//      fmt.Println(child.Name())
+      item.RemoveChild(i)
+    } else {
+      item.children[i].RemoveEmpty()
+      i += 1
+    }
 	}
 }
 
@@ -111,7 +133,7 @@ func (item *registryItem) RemoveChild(i int) {
 }
 
 func (item *registryItem) String() string {
-	return fmt.Sprintf("%s  size: %s  children: %d", item.name, bytefmt.ByteSize(item.Bytes()), len(item.children))
+	return fmt.Sprintf("%s  size: %s  children: %d  layers: %d", item.name, bytefmt.ByteSize(item.Bytes()), len(item.children), item.Layers())
 }
 
 func (item *registryItem) Child(name string) RegistryItem {
@@ -133,7 +155,7 @@ type Registry struct {
 }
 
 func (r *Registry) String() string {
-	return fmt.Sprintf("projects: %d  size: %s", len(r.children), bytefmt.ByteSize(r.Bytes()))
+	return fmt.Sprintf("projects: %d  size: %s  layers: %d", len(r.children), bytefmt.ByteSize(r.Bytes()), r.Layers())
 }
 
 func NewRegistry() *Registry {
@@ -143,7 +165,7 @@ func NewRegistry() *Registry {
 type layer struct {
 	registryItem
 	bytes uint64
-	//  repos map[string]bool
+	tags map[string]struct{}
 	cmd          []string
 	containerCmd []string
 }
@@ -159,15 +181,25 @@ func (l *layer) String() string {
 	} else {
 		cmd = l.cmd
 	}
-	return fmt.Sprintf("%s  size: %s  cmd: %s", l.name[7:19], bytefmt.ByteSize(l.bytes), cmd)
+  
+  tags := ""
+  for path := range l.tags {
+    tags += strings.Join(path[1:len(path) - 1], ",")
+  }
+	return fmt.Sprintf("%s  size: %s  tags: %s  cmd: %s", l.name[7:19], bytefmt.ByteSize(l.bytes), l.tags, cmd)
 }
 
 func (l *layer) Bytes() uint64 {
 	return l.bytes
 }
 
-func (l *layer) CollectLayers(layers *map[string]*layer) {
+func (l *layer) Layers() int {
+	return 1
+}
+
+func (l *layer) CollectLayers(layers *map[string]*layer, path []string) {
 	(*layers)[l.name] = l
+  l.tags[fmt.Sprintf("%s", path)] = struct{}{}
 }
 
 type image struct {
@@ -175,7 +207,7 @@ type image struct {
 }
 
 func (item *image) String() string {
-	return fmt.Sprintf("%s  size: %s  tags: %d", item.name, bytefmt.ByteSize(item.Bytes()), len(item.children))
+	return fmt.Sprintf("%s  size: %s  tags: %d  layers: %d", item.name, bytefmt.ByteSize(item.Bytes()), len(item.children), item.Layers())
 }
 
 type tag struct {
@@ -183,7 +215,7 @@ type tag struct {
 }
 
 func (item *tag) String() string {
-	return fmt.Sprintf("%s  size: %s  revisions: %d", item.name, bytefmt.ByteSize(item.Bytes()), len(item.children))
+	return fmt.Sprintf("%s  size: %s  revisions: %d  layers: %d", item.name, bytefmt.ByteSize(item.Bytes()), len(item.children), item.Layers())
 }
 
 type rev struct {
@@ -201,7 +233,7 @@ type project struct {
 }
 
 func (item *project) String() string {
-	return fmt.Sprintf("%s  size: %s  images: %d", item.name, bytefmt.ByteSize(item.Bytes()), len(item.children))
+	return fmt.Sprintf("%s  size: %s  images: %d  layers: %d", item.name, bytefmt.ByteSize(item.Bytes()), len(item.children), item.Layers())
 }
 
 /*func (parentItem *RegistryItem) AddChild(child *RegistryItem) {
@@ -258,7 +290,7 @@ func (reg *Registry) AddManifest(projectName string, imageName string, tagName s
 		if l.Container_Config != nil {
 			containerCmd = l.Container_Config.Cmd
 		}
-		rev.AddChild(&layer{registryItem: registryItem{name: l.BlobSum}, bytes: l.Size, cmd: cmd, containerCmd: containerCmd})
+		rev.AddChild(&layer{registryItem: registryItem{name: l.BlobSum}, bytes: l.Size, cmd: cmd, containerCmd: containerCmd, tags: make(map[string]struct{})})
 	}
 
 	/*
