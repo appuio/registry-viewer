@@ -3,7 +3,7 @@ package registry
 import "github.com/appuio/registry/Godeps/_workspace/src/github.com/pivotal-golang/bytefmt"
 import "fmt"
 import "sort"
-import "strings"
+// import "strings"
 
 //import "strings"
 
@@ -182,11 +182,11 @@ func (l *layer) String() string {
 		cmd = l.cmd
 	}
   
-  tags := ""
+/*  tags := ""
   for path := range l.tags {
     tags += strings.Join(path[1:len(path) - 1], ",")
-  }
-	return fmt.Sprintf("%s  size: %s  tags: %s  cmd: %s", l.name[7:19], bytefmt.ByteSize(l.bytes), l.tags, cmd)
+  } */
+	return fmt.Sprintf("%s  size: %s  cmd: %s", l.name[7:19], bytefmt.ByteSize(l.bytes), cmd)
 }
 
 func (l *layer) Bytes() uint64 {
@@ -207,7 +207,14 @@ type image struct {
 }
 
 func (item *image) String() string {
-	return fmt.Sprintf("%s  size: %s  tags: %d  layers: %d", item.name, bytefmt.ByteSize(item.Bytes()), len(item.children), item.Layers())
+  name := ""
+  if projectName == "appuio-infra" || projectName == "dtschan" {
+    name = item.name
+  } else {
+    name = string(item.name[0]) + "*******"
+  }
+
+	return fmt.Sprintf("%s  size: %s  tags: %d  layers: %d", name, bytefmt.ByteSize(item.Bytes()), len(item.children), item.Layers())
 }
 
 type tag struct {
@@ -232,8 +239,27 @@ type project struct {
 	//  Images []*image
 }
 
+//var projects map[string]int
+var projectName string
+
 func (item *project) String() string {
-	return fmt.Sprintf("%s  size: %s  images: %d  layers: %d", item.name, bytefmt.ByteSize(item.Bytes()), len(item.children), item.Layers())
+  projectName = item.name
+  name := ""
+  if item.name == "dtschan" || item.name == "appuio-infra" {
+    name = item.name
+  } else {
+    name = string(item.name[0]) + "*******"
+  }
+    
+	return fmt.Sprintf("%s  size: %s  images: %d  layers: %d", name, bytefmt.ByteSize(item.Bytes()), len(item.children), item.Layers())
+
+/*    if projects == nil { projects = make(map[string]int) }
+    index := projects[item.name]
+    if index == 0 {
+      index = len(projects) + 1
+      projects[item.name] = index
+    }
+  	return fmt.Sprintf("%s  size: %s  images: %d  layers: %d", "project", index, bytefmt.ByteSize(item.Bytes()), len(item.children), item.Layers())*/
 }
 
 /*func (parentItem *RegistryItem) AddChild(child *RegistryItem) {
@@ -284,12 +310,14 @@ func (reg *Registry) AddManifest(projectName string, imageName string, tagName s
 	// strings.Replace(cmd, "/bin/sh\",\"-c\",\"#(nop) ", "", 1)
 	for _, l := range manifest.History {
 		var cmd, containerCmd []string
-		if l.Config != nil {
-			cmd = l.Config.Cmd
-		}
-		if l.Container_Config != nil {
-			containerCmd = l.Container_Config.Cmd
-		}
+  	if projectName == "dtschan" || projectName == "appuio-infra" {
+      if l.Config != nil {
+	  		cmd = l.Config.Cmd
+  		}
+	  	if l.Container_Config != nil {
+		  	containerCmd = l.Container_Config.Cmd
+  		}
+    }
 		rev.AddChild(&layer{registryItem: registryItem{name: l.BlobSum}, bytes: l.Size, cmd: cmd, containerCmd: containerCmd, tags: make(map[string]struct{})})
 	}
 
