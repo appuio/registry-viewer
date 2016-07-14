@@ -2,6 +2,7 @@ package registry
 
 import (
   "fmt"
+//  "os"
   "encoding/json"
   "net/http"
   "io/ioutil"
@@ -58,6 +59,8 @@ func (manifest *Manifest) load(registry, username, password, namespace, name, im
     entry.BlobSum = manifest.FsLayers[i].BlobSum
     json.Unmarshal([]byte(entry.V1Compatibility), entry)
     entry.V1Compatibility = ""
+//    result, _ := json.Marshal(manifest)
+//    fmt.Fprintf(os.Stderr, "%s\n", string(result))
   }
 
 /*  for _, layer := range manifest.FsLayers {

@@ -207,7 +207,7 @@ func main() {
 //  registry.addTag("shopbgdi", "shop-bgdi", "jenkins-shop-bgdi-develop-OSE3-37-768c27a", "1234", 1, "1234")
 //  registry.addTag("shopbgdi", "shop-bgdi", "jenkins-shop-bgdi-develop-OSE3-38-5579d80", "6789", 3, "6789")
 
-  registry.Deduplicate()
+//  registry.Deduplicate()
   registry.Sort()
   
 //  RegistryTmpl(os.Stdout, registry)
